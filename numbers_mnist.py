@@ -18,15 +18,15 @@ mnist = keras.datasets.mnist
 class_names = ['0', '1', '2', '3', '4',
                '5', '6', '7', '8', '9']
 
-print(train_images.shape)
+print("train images shape: {0}".format(train_images.shape))
 
-print(len(train_labels))
+print("train labels length: {0}".format(len(train_labels))
 
-print(train_labels)
+print("train labels: {0}".format(train_labels))
 
-print(test_images.shape)
+print("test images shape: {0}".format(test_images.shape))
 
-print(len(test_labels))
+print("test labels length: {0}".format(len(test_labels)))
 
 plt.figure()
 plt.imshow(train_images[0])
@@ -69,11 +69,11 @@ print('\nTest accuracy:', test_acc)
 
 predictions = model.predict(test_images)
 
-print(predictions[0])
+print("predictions : {0}".fromat(predictions[0]))
 
-print(np.argmax(predictions[0]))
+print("argmax {0}".format(np.argmax(predictions[0])))
 
-print(test_labels[0])
+print("test labels: {0}".format(test_labels[0]))
 
 
 def plot_image(i, predictions_array, true_label, img):
@@ -141,18 +141,18 @@ plt.show()
 # Grab an image from the test dataset.
 img = test_images[1]
 
-print(img.shape)
+print("image shape: {0}".format(img.shape))
 
 # Add the image to a batch where it's the only member.
 img = (np.expand_dims(img,0))
 
-print(img.shape)
+print("image shape: {0}".format(img.shape))
 
 predictions_single = model.predict(img)
 
-print(predictions_single)
+print("predictions single : {0}".format(predictions_single))
 
 plot_value_array(1, predictions_single[0], test_labels)
 _ = plt.xticks(range(10), class_names, rotation=45)
 
-print(np.argmax(predictions_single[0]))
+print("predicted argmax : {0}".format(np.argmax(predictions_single[0])))
