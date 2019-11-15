@@ -2,7 +2,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 # TensorFlow and tf.keras
 import tensorflow as tf
-from tensorflow import keras
+import keras
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+import os
 
 # Helper libraries
 import numpy as np
@@ -10,10 +15,21 @@ import matplotlib.pyplot as plt
 
 print(tf.__version__)
 
+batch_size = 32
+num_classes = 10
+epochs = 100
+data_augmentation = True
+num_predictions = 20
+save_dir = os.path.join(os.getcwd(), 'saved_models')
+model_name = 'keras_cifar10_trained_model.h5'
 
 cifar10 = keras.datasets.cifar10
 
 (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
+
+# Convert class vectors to binary class matrices.
+train_labels = keras.utils.to_categorical(train_labels, num_classes)
+test_labels = keras.utils.to_categorical(test_labels, num_classes)
 
 class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 
                'dog', 'frog', 'horse', 'ship', 'truck']
@@ -34,43 +50,60 @@ plt.colorbar()
 plt.grid(False)
 plt.show()
 
-cifar_train_labels = [arr[0] for arr in train_labels]
-gray_train_images = [np.dot(img, [0.299, 0.587, 0.114]) for img in train_images]
-normalized_train_images = [np.array(img/ 255.0) for img in gray_train_images]  
-
-gray_test_images = [np.dot(img, [0.299, 0.587, 0.114]) for img in test_images]
-normalized_test_images = [np.array(img/ 255.0) for img in gray_test_images]
-
 plt.figure(figsize=(10,10))
 for i in range(25):
     plt.subplot(5,5,i+1)
     plt.xticks([])
     plt.yticks([])
     plt.grid(False)
-    plt.imshow(normalized_train_images[i], cmap=plt.cm.binary)
-    plt.xlabel(class_names[cifar_train_labels[i]])
+    plt.imshow(train_images[i], cmap=plt.cm.binary)
+    plt.xlabel(class_names[np.argmax(train_labels[i])])
 plt.show()
 
-model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(32, 32)),
-    keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dense(64, activation='relu'),
-    keras.layers.Dense(10, activation='softmax')
-])
 
-sgd = keras.optimizers.SGD(momentum=0.0, nesterov=False)
+model = Sequential()
+model.add(Conv2D(32, (3, 3), padding='same',
+                 input_shape=train_images.shape[1:]))
+model.add(Activation('relu'))
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
-model.compile(optimizer=sgd,
-              loss='sparse_categorical_crossentropy',
+model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Activation('relu'))
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+model.add(Flatten())
+model.add(Dense(512))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(num_classes))
+model.add(Activation('softmax'))
+
+
+opt = keras.optimizers.RMSprop(learning_rate=0.0001, decay=1e-6)
+
+model.compile(optimizer=opt,
+              loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(normalized_train_images, cifar_train_labels, epochs=10)
+# model.fit(normalized_train_images, cifar_train_labels, epochs=10)
+# model.fit(train_images, train_labels, batch_size=batch_size, epochs=epochs, validation_data=(test_images, test_labels), shuffle=True)
+model = keras.models.load_model('keras_cifar10_trained_model1.h5')
+train_images = train_images.astype('float32')
+test_images = test_images.astype('float32')
+train_images /= 255
+test_images /= 255
 
-test_loss, test_acc = model.evaluate(normalized_test_images,  test_labels, verbose=2)
+test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 
 print('\nTest accuracy:', test_acc)
 
-predictions = model.predict(normalized_test_images)
+predictions = model.predict(test_images)
 
 print(predictions[0])
 
