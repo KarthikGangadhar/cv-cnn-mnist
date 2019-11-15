@@ -111,7 +111,7 @@ print(np.argmax(predictions[0]))
 
 print(test_labels[0])
 
-
+test_labels = [np.argmax(label) for label in test_labels]
 def plot_image(i, predictions_array, true_label, img):
   predictions_array, true_label, img = predictions_array, true_label[i], img[i]
   plt.grid(False)
